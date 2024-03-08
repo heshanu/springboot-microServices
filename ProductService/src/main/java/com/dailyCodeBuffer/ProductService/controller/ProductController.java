@@ -41,5 +41,12 @@ public class ProductController {
         return new ResponseEntity<>(productResponse,HttpStatus.ACCEPTED);
     }
 
+    @PutMapping("/list/reducedQuanitiy/{id}")
+    public ResponseEntity<String> reducedQuantity(@PathVariable("id") long productId,@RequestParam long quantity){
+        productService.reducedQuantity(productId,quantity);
+        return new ResponseEntity<>("Updated for id {id}",HttpStatus.OK);
+        //return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
 }

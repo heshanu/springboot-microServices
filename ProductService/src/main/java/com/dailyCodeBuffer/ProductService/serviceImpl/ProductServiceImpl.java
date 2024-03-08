@@ -1,6 +1,7 @@
 package com.dailyCodeBuffer.ProductService.serviceImpl;
 
 import com.dailyCodeBuffer.ProductService.entity.ProductEntity;
+import com.dailyCodeBuffer.ProductService.exception.ProductInsufficentAmountException;
 import com.dailyCodeBuffer.ProductService.exception.ProductServiceCustomException;
 import com.dailyCodeBuffer.ProductService.model.ProductRequest;
 import com.dailyCodeBuffer.ProductService.model.ProductResponse;
@@ -49,12 +50,31 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProductById(long productId) {
         log.info("inside the getProductByI",productId);
-        ProductEntity product=productRepo.findById(productId).orElseThrow(()->new ProductServiceCustomException("Product wuth given id isnot avaialbe", "Product_Not_Found"));
+        ProductEntity product=productRepo.findById(productId)
+                .orElseThrow(()->new ProductServiceCustomException("Product with given id isnot avaialbe", "Product_Not_Found"));
 
         ProductResponse productResponse=new ProductResponse();
         BeanUtils.copyProperties(product,productResponse);
 
         return productResponse;
+    }
+
+    @Override
+    public void reducedQuantity(long productId, long quantity) {
+        log.info("Reduced Quantity{} for Id:{}",quantity,productId);
+
+        ProductEntity product=productRepo
+                .findById(productId)
+                .orElseThrow(()->
+                        new ProductInsufficentAmountException("Product not Found","PRODUCT NOT FOUND"));
+
+        if(product.getQuantity()<quantity){
+            throw new ProductInsufficentAmountException("Product doesnot have sufficent Quantity","PRODUCT NOT FOUND");
+        }
+
+        product.setQuantity(product.getQuantity()-quantity);
+        productRepo.save(product);
+        log.info("Product Quantity {} Updated Successfully for productId {}",quantity,product.getProductId());
     }
 
     private ProductResponse mapToDTO(ProductEntity product) {
